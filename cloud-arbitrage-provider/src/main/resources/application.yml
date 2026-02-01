@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://192.168.31.245:5432/cloud-arbitrage}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:123456}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      minimum-idle: 5
+      idle-timeout: 600000
+  data:
+    redis:
+      host: ${REDIS_IP:192.168.31.245}
+      password: ${REDIS_PASSWORD:123456}
+      port: 6379
+      timeout: 5000
+      lettuce:
+        shutdown-timeout: 100
+  main:
+    allow-bean-definition-overriding: true
+    allow-circular-references: true
+
+arbitrage:
+  cache-manager: true

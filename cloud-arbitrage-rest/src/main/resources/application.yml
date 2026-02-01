@@ -1,0 +1,11 @@
+server:
+  servlet:
+    context-path: /arbitrage
+  port: 19802
+
+spring:
+  application:
+    name: cloud-arbitrage-rest
+logging:
+  level:
+    root: info
