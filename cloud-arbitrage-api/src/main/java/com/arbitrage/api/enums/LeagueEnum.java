@@ -23,7 +23,7 @@ public enum LeagueEnum {
      */
     public static LeagueEnum getLeagueEnumPsByName(String name) {
         for (LeagueEnum leagueEnum : values()) {
-            if (leagueEnum.getLeague().equals(name)) {
+            if (leagueEnum.getLeague().equalsIgnoreCase(name)) {
                 return leagueEnum;
             }
         }

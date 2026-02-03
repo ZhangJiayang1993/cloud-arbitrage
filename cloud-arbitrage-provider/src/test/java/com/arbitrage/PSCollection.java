@@ -8,6 +8,8 @@ import com.arbitrage.api.enums.LeagueEnum;
 import com.arbitrage.api.enums.OddsTypeEnum;
 import com.arbitrage.api.enums.PlatformEnum;
 import com.arbitrage.api.model.collection.CollectionGameDataResp;
+import com.arbitrage.api.model.db.ComparisonTable;
+import com.arbitrage.common.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
@@ -17,6 +19,8 @@ import java.util.*;
 public class PSCollection {
 
     public static void main(String[] args) {
+        List<ComparisonTable> comparisonTableList = JSONArray.parseArray(DateUtils.testData).toJavaList(ComparisonTable.class);
+
         PlatformEnum platformEnum = PlatformEnum.PS;
         List<CollectionGameDataResp> collectionGameDataRespList = new ArrayList<>();
 
@@ -30,6 +34,7 @@ public class PSCollection {
 
         Set<String> gameIds = new HashSet<>();
 
+
         JSONObject listResponseJson = JSONObject.parseObject(getListResponse.body());
         JSONArray leagueJson = listResponseJson.getJSONArray("league");
         for (int leagueIndex = 0; leagueIndex < leagueJson.size(); leagueIndex++) {
@@ -41,19 +46,39 @@ public class PSCollection {
                 log.warn("未找到联赛枚举: {}", league);
                 continue;
             }
-
             JSONArray eventsJson = leagueItem.getJSONArray("events");
             for (int eventIndex = 0; eventIndex < eventsJson.size(); ++eventIndex) {
                 //{"away":"San Antonio Spurs","altTeaser":false,"version":646508434,"parentId":1622978205,"home":"Charlotte Hornets","betAcceptanceType":0,"resultingUnit":"Regular","rotNum":"9521","id":1623347371,"starts":"2026-01-31T20:00:00Z","liveStatus":1,"status":"H","parlayRestriction":2}
                 JSONObject eventItem = eventsJson.getJSONObject(eventIndex);
                 String home = eventItem.getString("home");
                 String away = eventItem.getString("away");
+
+                String homeTeamId = null; // 主队id
+                String awayTeamId = null; // 客队id
+                String homeTeamName = null; // 主队
+                String awayTeamName = null; // 客队
+                String homeTeamCnName = null; // 主队中文名
+                String awayTeamCnName = null; // 客队中文名
+
+
+                for (ComparisonTable comparisonTable : comparisonTableList) {
+                    if (comparisonTable.getPsName().equals(home)) {
+                        homeTeamId = comparisonTable.getId().toString();
+                        homeTeamName = comparisonTable.getEnName();
+                        homeTeamCnName = comparisonTable.getCnName();
+                    } else if (comparisonTable.getPolymarketName().equals(away)) {
+                        awayTeamId = comparisonTable.getId().toString();
+                        awayTeamName = comparisonTable.getEnName();
+                        awayTeamCnName = comparisonTable.getCnName();
+                    }
+                }
+
                 if (gameIds.add(eventItem.getString("parentId"))) {
                     String title = home + " vs " + away;
                     JSONObject extendInfo = new JSONObject();
                     extendInfo.put("id", leagueId);
                     extendInfo.put("eventId", eventItem.getString("parentId"));
-                    CollectionGameDataResp collectionGameDataResp = new CollectionGameDataResp(platformEnum.getPlatformId(), platformEnum.getPlatform(), leagueEnum.getLeagueId(), leagueEnum.getLeague(), title, null, null, null, null, null, null, BigDecimal.ZERO, extendInfo, new ArrayList<>());
+                    CollectionGameDataResp collectionGameDataResp = new CollectionGameDataResp(platformEnum.getPlatformId(), platformEnum.getPlatform(), leagueEnum.getLeagueId(), leagueEnum.getLeague(), title, homeTeamId, awayTeamId, homeTeamName, awayTeamName, homeTeamCnName, awayTeamCnName, BigDecimal.ZERO, extendInfo, new ArrayList<>());
                     collectionGameDataRespList.add(collectionGameDataResp);
                 }
             }
@@ -137,6 +162,7 @@ public class PSCollection {
         }
 
         System.out.println(JSONObject.toJSONString(collectionGameDataRespList));
+
 
     }
 

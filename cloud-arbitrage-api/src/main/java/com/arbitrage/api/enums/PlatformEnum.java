@@ -6,7 +6,8 @@ import lombok.Getter;
 public enum PlatformEnum {
 
     PS(1, "PS"),
-    POLYMARKET(2, "POLYMARKET");
+    POLYMARKET(2, "POLYMARKET"),
+
 
     ;
     private final Integer platformId;

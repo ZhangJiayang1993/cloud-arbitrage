@@ -23,7 +23,7 @@ import static com.arbitrage.api.constants.RedisConstants.FIVE_MINUTES;
 import static com.arbitrage.api.constants.RedisConstants.PS_AUTHORIZATION;
 
 @Slf4j
-@Service
+@Service("PSCollectionService")
 public class PSCollectionService implements CollectionService {
 
     private final RedisRepository redisRepository;
