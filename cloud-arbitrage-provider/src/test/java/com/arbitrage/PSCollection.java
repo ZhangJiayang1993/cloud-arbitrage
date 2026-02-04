@@ -66,12 +66,21 @@ public class PSCollection {
                         homeTeamId = comparisonTable.getId().toString();
                         homeTeamName = comparisonTable.getEnName();
                         homeTeamCnName = comparisonTable.getCnName();
-                    } else if (comparisonTable.getPolymarketName().equals(away)) {
+                    } else if (comparisonTable.getPsName().equals(away)) {
                         awayTeamId = comparisonTable.getId().toString();
                         awayTeamName = comparisonTable.getEnName();
                         awayTeamCnName = comparisonTable.getCnName();
                     }
                 }
+                if (homeTeamId == null) {
+                    log.warn("未找到主队: {}", home);
+                    continue;
+                }
+                if (awayTeamId == null) {
+                    log.warn("未找到客队: {}", away);
+                    continue;
+                }
+
 
                 if (gameIds.add(eventItem.getString("parentId"))) {
                     String title = home + " vs " + away;

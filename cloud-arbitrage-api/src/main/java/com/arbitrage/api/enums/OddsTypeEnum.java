@@ -27,4 +27,13 @@ public enum OddsTypeEnum {
         this.oddsTypeId = oddsTypeId;
         this.oddsType = oddsType;
     }
+
+    public static OddsTypeEnum getByOddsTypeId(Integer oddsTypeId) {
+        for (OddsTypeEnum oddsTypeEnum : values()) {
+            if (oddsTypeEnum.getOddsTypeId().equals(oddsTypeId)) {
+                return oddsTypeEnum;
+            }
+        }
+        return null;
+    }
 }
