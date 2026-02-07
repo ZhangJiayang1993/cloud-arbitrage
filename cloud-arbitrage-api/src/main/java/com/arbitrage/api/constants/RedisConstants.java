@@ -9,6 +9,8 @@ public interface RedisConstants {
 
     String POLYMARKET_GAME_DATA = "polymarket:game:data";
 
+    String COMPARISON_TABLE_KEY = "comparison:table:%s";
+
     long FIVE_MINUTES = 60 * 5;
 
     long TEN_SECONDS = 10;

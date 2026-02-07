@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="60 seconds" debug="false">
     <contextName>${APP_NAME}</contextName>
-    <springProperty name="APP_NAME" scope="context" source="spring.application.name" defaultValue="cloud-arbitrage-service"/>
+    <springProperty name="APP_NAME" scope="context" source="spring.application.name" defaultValue="cloud-arbitrage-scheduler"/>
     <springProperty name="LOG_ENV" scope="context" source="logging.env" defaultValue="uat"/>
     <springProperty name="LOG_PATH" scope="context" source="logging.path" defaultValue="logs"/>
     <springProperty name="LOG_FILE" scope="context" source="logging.file"

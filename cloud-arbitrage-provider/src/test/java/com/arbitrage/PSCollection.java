@@ -22,7 +22,7 @@ public class PSCollection {
         List<ComparisonTable> comparisonTableList = JSONArray.parseArray(DateUtils.testData).toJavaList(ComparisonTable.class);
 
         PlatformEnum platformEnum = PlatformEnum.PS;
-        List<CollectionGameDataResp> collectionGameDataRespList = new ArrayList<>();
+        List<CollectionGameDataResp> list = new ArrayList<>();
 
         String getListUrl = "https://api.ps3838.com/v3/fixtures?sportId=4&leagueIds=487&isLive=true";
         Map<String, String> headers = new HashMap<>();
@@ -88,14 +88,14 @@ public class PSCollection {
                     extendInfo.put("id", leagueId);
                     extendInfo.put("eventId", eventItem.getString("parentId"));
                     CollectionGameDataResp collectionGameDataResp = new CollectionGameDataResp(platformEnum.getPlatformId(), platformEnum.getPlatform(), leagueEnum.getLeagueId(), leagueEnum.getLeague(), title, homeTeamId, awayTeamId, homeTeamName, awayTeamName, homeTeamCnName, awayTeamCnName, BigDecimal.ZERO, extendInfo, new ArrayList<>());
-                    collectionGameDataRespList.add(collectionGameDataResp);
+                    list.add(collectionGameDataResp);
                 }
             }
 
         }
         String eventIds = String.join(",", gameIds);
         log.info("eventIds: {}", eventIds);
-        String getDetailUrl = "https://api.ps3838.com/v4/odds/parlay?sportId=4&leagueIds=487&oddsFormat=HongKong&eventIds=" + eventIds;
+        String getDetailUrl = "https://api.ps3838.com/v4/odds/parlay?sportId=4&leagueIds=487&oddsFormat=DECIMAL&eventIds=" + eventIds;
         HttpResponse getDetailResponse = HttpRequest.get(getDetailUrl).addHeaders(headers).execute();
         getDetailResponse.close();
         JSONObject detailJson = JSONObject.parseObject(getDetailResponse.body());
@@ -108,69 +108,81 @@ public class PSCollection {
             for (int eventIndex = 0; eventIndex < eventsJson.size(); eventIndex++) {
                 JSONObject eventItem = eventsJson.getJSONObject(eventIndex);
                 String gameId = eventItem.getString("id");
-                JSONObject periodsJson = eventItem.getJSONArray("periods").getJSONObject(0);
+                JSONArray periodsArrayJson = eventItem.getJSONArray("periods");
 
-                try {
-                    // spreads 让球盘
-                    JSONArray spreadsJson = periodsJson.getJSONArray("spreads");
-                    if (spreadsJson != null && !spreadsJson.isEmpty()) {
-                        for (int spreadIndex = 0; spreadIndex < spreadsJson.size(); spreadIndex++) {
-                            JSONObject spreadItem = spreadsJson.getJSONObject(spreadIndex);
-                            BigDecimal homeOdds = spreadItem.getBigDecimal("home").add(BigDecimal.ONE);
-                            BigDecimal awayOdds = spreadItem.getBigDecimal("away").add(BigDecimal.ONE);
-                            String handicap = spreadItem.getString("hdp");
-                            OddsTypeEnum oddsTypeEnum = OddsTypeEnum.HANDICAP;
-                            CollectionGameDataResp.OddsTypeResp oddsTypeResp = new CollectionGameDataResp.OddsTypeResp(oddsTypeEnum.getOddsTypeId(), oddsTypeEnum.getOddsType(), handicap, homeOdds, null, awayOdds, null, null, null, null, null, null, null, null);
-
-                            collectionGameDataRespList.stream().filter(resp -> resp.getExtendInfo().getString("eventId").equals(gameId)).findFirst().ifPresent(resp -> resp.getOdds().add(oddsTypeResp));
-
-                        }
+                for (int periodIndex = 0; periodIndex < periodsArrayJson.size(); periodIndex++) {
+                    JSONObject periodsJson = periodsArrayJson.getJSONObject(periodIndex);
+                    int status = periodsJson.getIntValue("status");
+                    if (status != 1) {
+                        log.info("忽略的 status: {}", status);
+                        continue;
                     }
-                } catch (Exception e) {
-                    log.error("spreads error", e);
-                }
-
-                try {
-                    // 大小盘
-                    JSONArray overUnderJson = periodsJson.getJSONArray("totals");
-                    if (overUnderJson != null && !overUnderJson.isEmpty()) {
-                        for (int overUnderIndex = 0; overUnderIndex < overUnderJson.size(); overUnderIndex++) {
-                            JSONObject overUnderItem = overUnderJson.getJSONObject(overUnderIndex);
-                            BigDecimal overOdds = overUnderItem.getBigDecimal("over").add(BigDecimal.ONE);
-                            BigDecimal underOdds = overUnderItem.getBigDecimal("under").add(BigDecimal.ONE);
-                            String overUnder = overUnderItem.getString("points");
-                            OddsTypeEnum oddsTypeEnum = OddsTypeEnum.OVER_UNDER;
+                    Integer number = periodsJson.getInteger("number");
+                    if (number == null || (number != 0 && number != 1)) {
+                        log.info("忽略的 number: {}", number);
+                        continue;
+                    }
+                    try {
+                        // 胜负盘
+                        JSONObject moneyLinesJson = periodsJson.getJSONObject("moneyline");
+                        if (moneyLinesJson != null) {
+                            BigDecimal homeOdds = moneyLinesJson.getBigDecimal("home");
+                            BigDecimal awayOdds = moneyLinesJson.getBigDecimal("away");
+                            OddsTypeEnum oddsTypeEnum = number == 0 ? OddsTypeEnum.MONEY_LINE : OddsTypeEnum.FIRST_HALF_MONEY_LINE;
                             CollectionGameDataResp.OddsTypeResp oddsTypeResp = new CollectionGameDataResp.OddsTypeResp(oddsTypeEnum.getOddsTypeId(),
-                                    oddsTypeEnum.getOddsType(), overUnder, null, null, null, null, null, null, overOdds, null, underOdds, null, null);
+                                    oddsTypeEnum.getOddsType(), null, homeOdds, null, awayOdds, null, null, null, null, null, null, null, null);
 
-                            collectionGameDataRespList.stream().filter(resp -> resp.getExtendInfo().getString("eventId").equals(gameId)).findFirst().ifPresent(resp -> resp.getOdds().add(oddsTypeResp));
-
+                            list.stream().filter(resp -> resp.getExtendInfo().getString("eventId").equals(gameId)).findFirst().ifPresent(resp -> resp.getOdds().add(oddsTypeResp));
                         }
+                    } catch (Exception e) {
+                        log.error("moneyLines error", e);
                     }
-                } catch (Exception e) {
-                    log.error("overUnder error", e);
-                }
 
-                try {
-                    // 胜负盘
-                    JSONObject moneyLinesJson = periodsJson.getJSONObject("moneyline");
-                    if (moneyLinesJson != null) {
-                        BigDecimal homeOdds = moneyLinesJson.getBigDecimal("home");
-                        BigDecimal awayOdds = moneyLinesJson.getBigDecimal("away");
-                        OddsTypeEnum oddsTypeEnum = OddsTypeEnum.MONEY_LINE;
-                        CollectionGameDataResp.OddsTypeResp oddsTypeResp = new CollectionGameDataResp.OddsTypeResp(oddsTypeEnum.getOddsTypeId(),
-                                oddsTypeEnum.getOddsType(), null, homeOdds, null, awayOdds, null, null, null, null, null, null, null, null);
+                    try {
+                        // spreads 让球盘
+                        JSONArray spreadsJson = periodsJson.getJSONArray("spreads");
+                        if (spreadsJson != null && !spreadsJson.isEmpty()) {
+                            for (int spreadIndex = 0; spreadIndex < spreadsJson.size(); spreadIndex++) {
+                                JSONObject spreadItem = spreadsJson.getJSONObject(spreadIndex);
+                                BigDecimal homeOdds = spreadItem.getBigDecimal("home");
+                                BigDecimal awayOdds = spreadItem.getBigDecimal("away");
+                                String handicap = spreadItem.getBigDecimal("hdp").negate().toString();
+                                OddsTypeEnum oddsTypeEnum = number == 0 ? OddsTypeEnum.HANDICAP : OddsTypeEnum.FIRST_HALF_HANDICAP;
+                                CollectionGameDataResp.OddsTypeResp oddsTypeResp = new CollectionGameDataResp.OddsTypeResp(oddsTypeEnum.getOddsTypeId(), oddsTypeEnum.getOddsType(), handicap, homeOdds, null, awayOdds, null, null, null, null, null, null, null, null);
 
-                        collectionGameDataRespList.stream().filter(resp -> resp.getExtendInfo().getString("eventId").equals(gameId)).findFirst().ifPresent(resp -> resp.getOdds().add(oddsTypeResp));
+                                list.stream().filter(resp -> resp.getExtendInfo().getString("eventId").equals(gameId)).findFirst().ifPresent(resp -> resp.getOdds().add(oddsTypeResp));
+
+                            }
+                        }
+                    } catch (Exception e) {
+                        log.error("spreads error", e);
                     }
-                } catch (Exception e) {
-                    log.error("moneyLines error", e);
+
+                    try {
+                        // 大小盘
+                        JSONArray overUnderJson = periodsJson.getJSONArray("totals");
+                        if (overUnderJson != null && !overUnderJson.isEmpty()) {
+                            for (int overUnderIndex = 0; overUnderIndex < overUnderJson.size(); overUnderIndex++) {
+                                JSONObject overUnderItem = overUnderJson.getJSONObject(overUnderIndex);
+                                BigDecimal overOdds = overUnderItem.getBigDecimal("over");
+                                BigDecimal underOdds = overUnderItem.getBigDecimal("under");
+                                String overUnder = overUnderItem.getString("points");
+                                OddsTypeEnum oddsTypeEnum = number == 0 ? OddsTypeEnum.OVER_UNDER : OddsTypeEnum.FIRST_HALF_OVER_UNDER;
+                                CollectionGameDataResp.OddsTypeResp oddsTypeResp = new CollectionGameDataResp.OddsTypeResp(oddsTypeEnum.getOddsTypeId(),
+                                        oddsTypeEnum.getOddsType(), overUnder, null, null, null, null, null, null, overOdds, null, underOdds, null, null);
+
+                                list.stream().filter(resp -> resp.getExtendInfo().getString("eventId").equals(gameId)).findFirst().ifPresent(resp -> resp.getOdds().add(oddsTypeResp));
+
+                            }
+                        }
+                    } catch (Exception e) {
+                        log.error("overUnder error", e);
+                    }
                 }
             }
-
         }
 
-        System.out.println(JSONObject.toJSONString(collectionGameDataRespList));
+        System.out.println(JSONObject.toJSONString(list));
 
 
     }

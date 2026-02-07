@@ -1,18 +1,21 @@
 package com.arbitrage.common.utils;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 public class DateUtils {
 
     public static final String DATE_FORMAT = "yyyy-MM-dd";
 
-    public static String getTodayDate() {
-        return LocalDate.now().format(DateTimeFormatter.ofPattern(DATE_FORMAT));
-    }
 
-    public static String getAfterDate(Integer days) {
-        return LocalDate.now().plusDays(days).format(DateTimeFormatter.ofPattern(DATE_FORMAT));
+    public static String getAfterDate(int days) {
+        Date date = new Date();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.add(Calendar.DAY_OF_MONTH, days);
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
+        return sdf.format(cal.getTime());
     }
 
     public static String testData = "[\n" +
