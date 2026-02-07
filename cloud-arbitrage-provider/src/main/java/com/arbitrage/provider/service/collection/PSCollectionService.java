@@ -172,7 +172,7 @@ public class PSCollectionService implements CollectionService {
                                 JSONObject spreadItem = spreadsJson.getJSONObject(spreadIndex);
                                 BigDecimal homeOdds = spreadItem.getBigDecimal("home");
                                 BigDecimal awayOdds = spreadItem.getBigDecimal("away");
-                                String handicap = spreadItem.getBigDecimal("hdp").negate().toString();
+                                String handicap = spreadItem.getString("hdp");
                                 OddsTypeEnum oddsTypeEnum = number == 0 ? OddsTypeEnum.HANDICAP : OddsTypeEnum.FIRST_HALF_HANDICAP;
                                 CollectionGameDataResp.OddsTypeResp oddsTypeResp = new CollectionGameDataResp.OddsTypeResp(oddsTypeEnum.getOddsTypeId(), oddsTypeEnum.getOddsType(), handicap, homeOdds, null, awayOdds, null, null, null, null, null, null, null, null);
 

@@ -89,7 +89,7 @@ public class PolymarketCollectionService implements CollectionService {
         return list;
     }
 
-    private static void improveCompetitionData(CollectionGameDataResp collectionGameDataResp, JSONObject marketJsonObject) {
+    public static void improveCompetitionData(CollectionGameDataResp collectionGameDataResp, JSONObject marketJsonObject) {
         BigDecimal bestBid = marketJsonObject.getBigDecimal("bestBid");
         BigDecimal bestAsk = marketJsonObject.getBigDecimal("bestAsk");
         if (bestBid == null || bestAsk == null) {
@@ -104,12 +104,6 @@ public class PolymarketCollectionService implements CollectionService {
             return;
         }
 
-        //        BigDecimal homeOdds = bestBidOdds;
-        //        BigDecimal awayOdds = bestAskOdds;
-        //
-        //        BigDecimal overOdds = bestAskOdds;
-        //        BigDecimal underOdds = bestBidOdds;
-
         switch (sportsMarketType) {
             case "moneyline": {
                 // 胜负盘
@@ -121,10 +115,14 @@ public class PolymarketCollectionService implements CollectionService {
             }
             case "spreads": {
                 // 让分盘
-                log.info("让分盘 {}", marketJsonObject.getString("question"));
+                String question = marketJsonObject.getString("question");
                 OddsTypeEnum oddsTypeEnum = OddsTypeEnum.HANDICAP;
                 BigDecimal line = marketJsonObject.getBigDecimal("line");
-                CollectionGameDataResp.OddsTypeResp oddsTypeResp = new CollectionGameDataResp.OddsTypeResp(oddsTypeEnum.getOddsTypeId(), oddsTypeEnum.getOddsType(), line.toString(), bestBidOdds, null, bestAskOdds, null, null, null, null, null, null, null, null);
+                boolean homeSpreads = question.contains(collectionGameDataResp.getHomeTeamName());
+                line = homeSpreads ? line : line.negate();
+                BigDecimal homeOdds = homeSpreads ? bestAskOdds : bestBidOdds;
+                BigDecimal awayOdds = homeSpreads ? bestBidOdds : bestAskOdds;
+                CollectionGameDataResp.OddsTypeResp oddsTypeResp = new CollectionGameDataResp.OddsTypeResp(oddsTypeEnum.getOddsTypeId(), oddsTypeEnum.getOddsType(), line.toString(), homeOdds, null, awayOdds, null, null, null, null, null, null, null, null);
                 collectionGameDataResp.getOdds().add(oddsTypeResp);
                 break;
             }
@@ -148,9 +146,14 @@ public class PolymarketCollectionService implements CollectionService {
             case "first_half_spreads": {
                 // 上半场让分盘
 //                log.info("上半场让分盘 {}", marketJsonObject.getString("question"));
+                String question = marketJsonObject.getString("question");
                 OddsTypeEnum oddsTypeEnum = OddsTypeEnum.FIRST_HALF_HANDICAP;
                 BigDecimal line = marketJsonObject.getBigDecimal("line");
-                CollectionGameDataResp.OddsTypeResp oddsTypeResp = new CollectionGameDataResp.OddsTypeResp(oddsTypeEnum.getOddsTypeId(), oddsTypeEnum.getOddsType(), line.toString(), bestBidOdds, null, bestAskOdds, null, null, null, null, null, null, null, null);
+                boolean homeSpreads = question.contains(collectionGameDataResp.getHomeTeamName());
+                line = homeSpreads ? line : line.negate();
+                BigDecimal homeOdds = homeSpreads ? bestAskOdds : bestBidOdds;
+                BigDecimal awayOdds = homeSpreads ? bestBidOdds : bestAskOdds;
+                CollectionGameDataResp.OddsTypeResp oddsTypeResp = new CollectionGameDataResp.OddsTypeResp(oddsTypeEnum.getOddsTypeId(), oddsTypeEnum.getOddsType(), line.toString(), homeOdds, null, awayOdds, null, null, null, null, null, null, null, null);
                 collectionGameDataResp.getOdds().add(oddsTypeResp);
                 break;
             }
@@ -174,9 +177,14 @@ public class PolymarketCollectionService implements CollectionService {
             case "second_half_spreads": {
                 // 下半场让分盘
 //                log.info("下半场让分盘 {}", marketJsonObject.getString("question"));
+                String question = marketJsonObject.getString("question");
                 OddsTypeEnum oddsTypeEnum = OddsTypeEnum.SECOND_HALF_HANDICAP;
                 BigDecimal line = marketJsonObject.getBigDecimal("line");
-                CollectionGameDataResp.OddsTypeResp oddsTypeResp = new CollectionGameDataResp.OddsTypeResp(oddsTypeEnum.getOddsTypeId(), oddsTypeEnum.getOddsType(), line.toString(), bestBidOdds, null, bestAskOdds, null, null, null, null, null, null, null, null);
+                boolean homeSpreads = question.contains(collectionGameDataResp.getHomeTeamName());
+                line = homeSpreads ? line : line.negate();
+                BigDecimal homeOdds = homeSpreads ? bestAskOdds : bestBidOdds;
+                BigDecimal awayOdds = homeSpreads ? bestBidOdds : bestAskOdds;
+                CollectionGameDataResp.OddsTypeResp oddsTypeResp = new CollectionGameDataResp.OddsTypeResp(oddsTypeEnum.getOddsTypeId(), oddsTypeEnum.getOddsType(), line.toString(), homeOdds, null, awayOdds, null, null, null, null, null, null, null, null);
                 collectionGameDataResp.getOdds().add(oddsTypeResp);
                 break;
             }
@@ -184,7 +192,6 @@ public class PolymarketCollectionService implements CollectionService {
                 // 下半场总进球数盘
 //                log.info("下半场总进球数盘 {}", marketJsonObject.getString("question"));
                 OddsTypeEnum oddsTypeEnum = OddsTypeEnum.SECOND_HALF_OVER_UNDER;
-
                 BigDecimal line = marketJsonObject.getBigDecimal("line");
                 CollectionGameDataResp.OddsTypeResp oddsTypeResp = new CollectionGameDataResp.OddsTypeResp(oddsTypeEnum.getOddsTypeId(), oddsTypeEnum.getOddsType(), line.toString(), null, null, null, null, null, null, bestAskOdds, null, bestBidOdds, null, null);
                 collectionGameDataResp.getOdds().add(oddsTypeResp);
