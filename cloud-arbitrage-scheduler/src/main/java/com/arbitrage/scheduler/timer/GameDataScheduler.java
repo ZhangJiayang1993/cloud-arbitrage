@@ -4,9 +4,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.arbitrage.api.constants.RedisConstants;
 import com.arbitrage.api.model.collection.CollectionGameDataResp;
 import com.arbitrage.api.model.order.ArbitrageData;
+import com.arbitrage.api.service.CalculatorTwoWayArbitrageService;
 import com.arbitrage.api.service.CollectionService;
 import com.arbitrage.common.redis.RedisRepository;
-import com.arbitrage.provider.utils.CalculatorTwoWayArbitrage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,11 +23,14 @@ public class GameDataScheduler {
 
     private final CollectionService polymarketCollectionService;
 
+    private final CalculatorTwoWayArbitrageService calculatorTwoWayArbitrageService;
+
     private final RedisRepository redisRepository;
 
-    public GameDataScheduler(@Qualifier("PSCollectionService") CollectionService psCollectionService, @Qualifier("PolymarketCollectionService") CollectionService polymarketCollectionService, RedisRepository redisRepository) {
+    public GameDataScheduler(@Qualifier("PSCollectionService") CollectionService psCollectionService, @Qualifier("PolymarketCollectionService") CollectionService polymarketCollectionService, CalculatorTwoWayArbitrageService calculatorTwoWayArbitrageService, RedisRepository redisRepository) {
         this.psCollectionService = psCollectionService;
         this.polymarketCollectionService = polymarketCollectionService;
+        this.calculatorTwoWayArbitrageService = calculatorTwoWayArbitrageService;
         this.redisRepository = redisRepository;
     }
 
@@ -55,7 +58,7 @@ public class GameDataScheduler {
         List<CollectionGameDataResp> all = new ArrayList<>();
         all.addAll(psList);
         all.addAll(polymarketList);
-        List<ArbitrageData> arbitrageDataList = CalculatorTwoWayArbitrage.calculate(all);
+        List<ArbitrageData> arbitrageDataList = calculatorTwoWayArbitrageService.calculate(all);
         if (arbitrageDataList.isEmpty()) {
             log.info("无套利数据");
         } else {

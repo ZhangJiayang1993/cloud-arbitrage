@@ -113,7 +113,7 @@ public class PSCollectionService implements CollectionService {
                     JSONObject extendInfo = new JSONObject();
                     extendInfo.put("id", leagueId);
                     extendInfo.put("eventId", eventItem.getString("parentId"));
-                    CollectionGameDataResp collectionGameDataResp = new CollectionGameDataResp(platformEnum.getPlatformId(), platformEnum.getPlatform(), leagueEnum.getLeagueId(), leagueEnum.getLeague(), title, homeTeamId, awayTeamId, homeTeamName, awayTeamName, homeTeamCnName, awayTeamCnName, BigDecimal.ZERO, extendInfo, new ArrayList<>());
+                    CollectionGameDataResp collectionGameDataResp = new CollectionGameDataResp(platformEnum.getPlatformId(), platformEnum.getPlatform(), platformEnum.getCurrencyTypeEnum(), leagueEnum.getLeagueId(), leagueEnum.getLeague(), title, homeTeamId, awayTeamId, homeTeamName, awayTeamName, homeTeamCnName, awayTeamCnName, BigDecimal.ZERO, extendInfo, new ArrayList<>());
                     list.add(collectionGameDataResp);
                 }
             }
@@ -148,6 +148,10 @@ public class PSCollectionService implements CollectionService {
                         log.info("忽略的 number: {}", number);
                         continue;
                     }
+
+                    JSONObject extendInfo = new JSONObject();
+                    extendInfo.put("lineId", periodsJson.getString("lineId"));
+                    extendInfo.put("periodNumber", number);
                     try {
                         // 胜负盘
                         JSONObject moneyLinesJson = periodsJson.getJSONObject("moneyline");
@@ -156,7 +160,7 @@ public class PSCollectionService implements CollectionService {
                             BigDecimal awayOdds = moneyLinesJson.getBigDecimal("away");
                             OddsTypeEnum oddsTypeEnum = number == 0 ? OddsTypeEnum.MONEY_LINE : OddsTypeEnum.FIRST_HALF_MONEY_LINE;
                             CollectionGameDataResp.OddsTypeResp oddsTypeResp = new CollectionGameDataResp.OddsTypeResp(oddsTypeEnum.getOddsTypeId(),
-                                    oddsTypeEnum.getOddsType(), null, homeOdds, null, awayOdds, null, null, null, null, null, null, null, null);
+                                    oddsTypeEnum.getOddsType(), null, homeOdds, null, awayOdds, null, null, null, null, null, null, null, extendInfo);
 
                             list.stream().filter(resp -> resp.getExtendInfo().getString("eventId").equals(gameId)).findFirst().ifPresent(resp -> resp.getOdds().add(oddsTypeResp));
                         }
@@ -173,8 +177,11 @@ public class PSCollectionService implements CollectionService {
                                 BigDecimal homeOdds = spreadItem.getBigDecimal("home");
                                 BigDecimal awayOdds = spreadItem.getBigDecimal("away");
                                 String handicap = spreadItem.getString("hdp");
+
+                                extendInfo.put("altLineId", spreadItem.getString("altLineId"));
+
                                 OddsTypeEnum oddsTypeEnum = number == 0 ? OddsTypeEnum.HANDICAP : OddsTypeEnum.FIRST_HALF_HANDICAP;
-                                CollectionGameDataResp.OddsTypeResp oddsTypeResp = new CollectionGameDataResp.OddsTypeResp(oddsTypeEnum.getOddsTypeId(), oddsTypeEnum.getOddsType(), handicap, homeOdds, null, awayOdds, null, null, null, null, null, null, null, null);
+                                CollectionGameDataResp.OddsTypeResp oddsTypeResp = new CollectionGameDataResp.OddsTypeResp(oddsTypeEnum.getOddsTypeId(), oddsTypeEnum.getOddsType(), handicap, homeOdds, null, awayOdds, null, null, null, null, null, null, null, extendInfo);
 
                                 list.stream().filter(resp -> resp.getExtendInfo().getString("eventId").equals(gameId)).findFirst().ifPresent(resp -> resp.getOdds().add(oddsTypeResp));
 
@@ -193,9 +200,12 @@ public class PSCollectionService implements CollectionService {
                                 BigDecimal overOdds = overUnderItem.getBigDecimal("over");
                                 BigDecimal underOdds = overUnderItem.getBigDecimal("under");
                                 String overUnder = overUnderItem.getString("points");
+
+                                extendInfo.put("altLineId", overUnderItem.getString("altLineId"));
+
                                 OddsTypeEnum oddsTypeEnum = number == 0 ? OddsTypeEnum.OVER_UNDER : OddsTypeEnum.FIRST_HALF_OVER_UNDER;
                                 CollectionGameDataResp.OddsTypeResp oddsTypeResp = new CollectionGameDataResp.OddsTypeResp(oddsTypeEnum.getOddsTypeId(),
-                                        oddsTypeEnum.getOddsType(), overUnder, null, null, null, null, null, null, overOdds, null, underOdds, null, null);
+                                        oddsTypeEnum.getOddsType(), overUnder, null, null, null, null, null, null, overOdds, null, underOdds, null, extendInfo);
 
                                 list.stream().filter(resp -> resp.getExtendInfo().getString("eventId").equals(gameId)).findFirst().ifPresent(resp -> resp.getOdds().add(oddsTypeResp));
 

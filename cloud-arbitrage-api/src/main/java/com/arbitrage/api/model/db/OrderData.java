@@ -1,20 +1,21 @@
-package com.arbitrage.api.model.order;
+package com.arbitrage.api.model.db;
 
 import com.alibaba.fastjson.JSONObject;
-import com.arbitrage.api.enums.CurrencyTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
-/**
- * 有套利机会的比赛数据
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArbitrageData {
+public class OrderData {
+
+    private Long orderId;
+    private String orderNo;
+
     private Integer leagueId; // 联赛id
     private String league; // 联赛
 
@@ -50,33 +51,21 @@ public class ArbitrageData {
 
     private BigDecimal homeOdds; // 主队赔率
     private BigDecimal homeBetAmount; // 主队下注金额
-    private CurrencyTypeEnum homeCurrencyType; // 主队下注币种
-    private BigDecimal rmbHomeBetAmount; // 主队下注金额（人民币）
 
     private BigDecimal awayOdds; // 客队赔率
     private BigDecimal awayBetAmount; // 客队下注金额
-    private CurrencyTypeEnum awayCurrencyType; // 客队下注币种
-    private BigDecimal rmbAwayBetAmount; // 客队下注金额（人民币）
 
     // 只有部分盘口才有平局赔率
     private BigDecimal drawOdds; // 平局赔率
     private BigDecimal drawBetAmount; // 平局下注金额
-    private CurrencyTypeEnum drawCurrencyType; // 平局下注币种
-    private BigDecimal rmbDrawBetAmount; // 平局下注金额（人民币）
 
     private BigDecimal overOdds; // 大小盘 大赔率
     private BigDecimal overBetAmount; // 大小盘下注金额
-    private CurrencyTypeEnum overCurrencyType; // 大小盘下注币种
-    private BigDecimal rmbOverBetAmount; // 大小盘下注金额（人民币）
 
     private BigDecimal underOdds; // 大小盘 小赔率
     private BigDecimal underBetAmount; // 大小盘下注金额
-    private CurrencyTypeEnum underCurrencyType; // 大小盘下注币种
-    private BigDecimal rmbUnderBetAmount; // 大小盘下注金额（人民币）
 
-    private JSONObject homeOrderInfo; // 主队下单信息
-    private JSONObject awayOrderInfo; // 可对下单信息
-    private JSONObject drawOrderInfo; // 平局下单信息
+    private Integer state; // 订单状态
 
     /**
      * 套利因子 1/赔率1 + 1/赔率2 + ...
@@ -84,5 +73,21 @@ public class ArbitrageData {
      */
     private BigDecimal arbitrageFactor;
 
+    private JSONObject homeOrderInfo; // 主队下单信息
+    private JSONObject awayOrderInfo; // 可对下单信息
+    private JSONObject drawOrderInfo; // 平局下单信息
 
+    private JSONObject homePlatformBetData; // 主队平台下注返回数据
+    private JSONObject awayPlatformBetData; // 客队平台下注返回数据
+    private JSONObject drawPlatformBetData; // 平局平台下注返回数据
+
+    /**
+     * 净利润
+     */
+    private BigDecimal netProfit;
+
+    private Date createdDate;
+    private Date updatedDate;
+
+    private Boolean deleteFlag; // 删除标志
 }

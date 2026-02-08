@@ -11,6 +11,8 @@ public interface RedisConstants {
 
     String COMPARISON_TABLE_KEY = "comparison:table:%s";
 
+    String USD_EXCHANGE_RATE = "usd:exchange:rate";
+
     long FIVE_MINUTES = 60 * 5;
 
     long TEN_SECONDS = 10;

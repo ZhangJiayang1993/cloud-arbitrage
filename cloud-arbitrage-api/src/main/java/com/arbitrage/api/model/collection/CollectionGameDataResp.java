@@ -1,6 +1,7 @@
 package com.arbitrage.api.model.collection;
 
 import com.alibaba.fastjson.JSONObject;
+import com.arbitrage.api.enums.CurrencyTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,7 @@ public class CollectionGameDataResp {
 
     private Integer platformId; // 平台id
     private String platform; // 平台
+    private CurrencyTypeEnum currencyTypeEnum; // 币种类型
     private Integer leagueId; // 联赛id
     private String league; // 联赛
     private String title; // 标题

@@ -78,7 +78,7 @@ public class PolymarketCollectionService implements CollectionService {
             log.info("{} {} {}", platformEnum, leagueEnum, title);
             JSONArray marketsJson = jsonObject.getJSONArray("markets");
             JSONObject extendInfo = new JSONObject();
-            CollectionGameDataResp collectionGameDataResp = new CollectionGameDataResp(platformEnum.getPlatformId(), platformEnum.getPlatform(), leagueEnum.getLeagueId(), leagueEnum.getLeague(), title, homeTeamId, awayTeamId, homeTeamName, awayTeamName, homeTeamCnName, awayTeamCnName, BigDecimal.ZERO, extendInfo, new ArrayList<>());
+            CollectionGameDataResp collectionGameDataResp = new CollectionGameDataResp(platformEnum.getPlatformId(), platformEnum.getPlatform(), platformEnum.getCurrencyTypeEnum(), leagueEnum.getLeagueId(), leagueEnum.getLeague(), title, homeTeamId, awayTeamId, homeTeamName, awayTeamName, homeTeamCnName, awayTeamCnName, BigDecimal.ZERO, extendInfo, new ArrayList<>());
             for (int marketIndex = 0; marketIndex < marketsJson.size(); marketIndex++) {
                 JSONObject marketJsonObject = marketsJson.getJSONObject(marketIndex);
                 improveCompetitionData(collectionGameDataResp, marketJsonObject);
